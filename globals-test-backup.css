@@ -1,0 +1,16 @@
+@import "tailwindcss";
+
+/* Test theme */
+@theme {
+  --font-family-sans: 'Inter', system-ui, sans-serif;
+}
+
+/* Test styles */
+:root {
+  --theme-bg-light: #F7F7F7;
+  --theme-text-light: #333333;
+}
+
+.theme-text-primary {
+  color: var(--theme-text-light);
+}

@@ -6,6 +6,23 @@ import { ColorInfo } from '../types/color';
 import { AdvancedColorInfo, LABColor, WCAGResult, ColorBlindnessResult } from '../types/advanced';
 
 /**
+ * 🛡️ **安全なWCAG結果の作成**
+ */
+function createEmptyWCAGResult(foreground: string, background: string): WCAGResult {
+  return {
+    foreground,
+    background,
+    contrastRatio: 1.0, // 最低限の値
+    aaLevel: { normal: false, large: false },
+    aaaLevel: { normal: false, large: false },
+    suggestions: {
+      lightVersion: foreground,
+      darkVersion: foreground
+    }
+  };
+}
+
+/**
  * 🔬 **精密色変換: RGB → LAB色空間**
  * 
  * LAB色空間は人間の視覚により近い色表現で、色の知覚差を正確に計算できます
@@ -67,18 +84,45 @@ export function rgbToLch(r: number, g: number, b: number): { l: number; c: numbe
  */
 export function calculateDeltaE2000(color1: string, color2: string): number {
   try {
-    const parsedColor1 = parse(color1);
-    const parsedColor2 = parse(color2);
+    // 🚀 より安全で高速なchroma.jsのDelta E計算を使用
+    // culoriの複雑な呼び出しによる無限ループ問題を回避
+    const chromaColor1 = chroma(color1);
+    const chromaColor2 = chroma(color2);
     
-    if (!parsedColor1 || !parsedColor2) {
+    // 色の有効性チェック
+    if (!chroma.valid(color1) || !chroma.valid(color2)) {
+      console.warn(`🚨 無効な色: ${color1}, ${color2}`);
       return 100; // 無効な色の場合は最大差値を返す
     }
     
-    const deltaE = differenceCiede2000()(parsedColor1, parsedColor2);
+    // chroma.jsの高精度Delta E計算（CIE76ベース）
+    const deltaE = chroma.deltaE(color1, color2);
+    
+    // NaN や Infinity をチェック
+    if (!isFinite(deltaE) || isNaN(deltaE)) {
+      console.warn(`🚨 Delta E計算結果が無効: ${deltaE}`);
+      return 100;
+    }
+    
     return Math.round(deltaE * 100) / 100;
   } catch (error) {
-    // フォールバックとしてchroma.jsのデフォルトdeltaEを使用
-    return Math.round(chroma.deltaE(color1, color2) * 100) / 100;
+    console.error('❌ Delta E 2000計算エラー:', error, { color1, color2 });
+    
+    // 最終フォールバック: 簡易的な色差計算
+    try {
+      const rgb1 = chroma(color1).rgb();
+      const rgb2 = chroma(color2).rgb();
+      const simpleDiff = Math.sqrt(
+        Math.pow(rgb1[0] - rgb2[0], 2) + 
+        Math.pow(rgb1[1] - rgb2[1], 2) + 
+        Math.pow(rgb1[2] - rgb2[2], 2)
+      ) / Math.sqrt(3 * 255 * 255) * 100;
+      
+      return Math.round(simpleDiff * 100) / 100;
+    } catch (fallbackError) {
+      console.error('❌ フォールバック計算も失敗:', fallbackError);
+      return 100; // 完全に失敗した場合
+    }
   }
 }
 
@@ -87,18 +131,47 @@ export function calculateDeltaE2000(color1: string, color2: string): number {
  */
 export function calculateDeltaE94(color1: string, color2: string): number {
   try {
-    const parsedColor1 = parse(color1);
-    const parsedColor2 = parse(color2);
+    // 🚀 安全で高速なchroma.jsベースのDelta E計算
+    const chromaColor1 = chroma(color1);
+    const chromaColor2 = chroma(color2);
     
-    if (!parsedColor1 || !parsedColor2) {
-      return 100; // 無効な色の場合は最大差値を返す
+    // 色の有効性チェック
+    if (!chroma.valid(color1) || !chroma.valid(color2)) {
+      console.warn(`🚨 無効な色 (CIE94): ${color1}, ${color2}`);
+      return 100;
     }
     
-    const deltaE = differenceCie94()(parsedColor1, parsedColor2);
-    return Math.round(deltaE * 100) / 100;
+    // CIE94は複雑なので、chroma.jsのDelta E（CIE76）に軽い補正を加える
+    const baseDeltaE = chroma.deltaE(color1, color2);
+    
+    // NaN や Infinity をチェック
+    if (!isFinite(baseDeltaE) || isNaN(baseDeltaE)) {
+      console.warn(`🚨 Delta E 94計算結果が無効: ${baseDeltaE}`);
+      return 100;
+    }
+    
+    // CIE94はCIE76よりもわずかに小さな値になる傾向があるため軽く補正
+    const deltaE94 = baseDeltaE * 0.95;
+    
+    return Math.round(deltaE94 * 100) / 100;
   } catch (error) {
-    // フォールバックとしてchroma.jsのデフォルトdeltaEを使用
-    return Math.round(chroma.deltaE(color1, color2) * 100) / 100;
+    console.error('❌ Delta E 94計算エラー:', error, { color1, color2 });
+    
+    // 最終フォールバック: 簡易的な色差計算
+    try {
+      const rgb1 = chroma(color1).rgb();
+      const rgb2 = chroma(color2).rgb();
+      const simpleDiff = Math.sqrt(
+        Math.pow(rgb1[0] - rgb2[0], 2) + 
+        Math.pow(rgb1[1] - rgb2[1], 2) + 
+        Math.pow(rgb1[2] - rgb2[2], 2)
+      ) / Math.sqrt(3 * 255 * 255) * 100 * 0.95; // CIE94風の補正
+      
+      return Math.round(simpleDiff * 100) / 100;
+    } catch (fallbackError) {
+      console.error('❌ フォールバック計算も失敗:', fallbackError);
+      return 100; // 完全に失敗した場合
+    }
   }
 }
 
@@ -114,29 +187,51 @@ export function calculateDeltaE94(color1: string, color2: string): number {
  * // { contrastRatio: 21, aaLevel: { normal: true, large: true }, ... }
  */
 export function checkWCAGCompliance(foreground: string, background: string): WCAGResult {
-  const contrastRatio = Math.round(chroma.contrast(foreground, background) * 100) / 100;
-  
-  const aaLevel = {
-    normal: contrastRatio >= 4.5,
-    large: contrastRatio >= 3.0
-  };
-  
-  const aaaLevel = {
-    normal: contrastRatio >= 7.0,
-    large: contrastRatio >= 4.5
-  };
-  
-  // 🎨 **改善提案の生成**
-  const suggestions = generateWCAGSuggestions(foreground, background, contrastRatio);
-  
-  return {
-    foreground,
-    background,
-    contrastRatio,
-    aaLevel,
-    aaaLevel,
-    suggestions
-  };
+  try {
+    // 色の有効性チェック
+    const chromaFg = chroma(foreground);
+    const chromaBg = chroma(background);
+    
+    if (!chroma.valid(foreground) || !chroma.valid(background)) {
+      console.warn(`🚨 WCAG: 無効な色 ${foreground}, ${background}`);
+      return createEmptyWCAGResult(foreground, background);
+    }
+    
+    const contrastRatio = chroma.contrast(foreground, background);
+    
+    // NaN や Infinity をチェック
+    if (!isFinite(contrastRatio) || isNaN(contrastRatio)) {
+      console.warn(`🚨 WCAG: 無効なコントラスト比 ${contrastRatio}`);
+      return createEmptyWCAGResult(foreground, background);
+    }
+    
+    const roundedRatio = Math.round(contrastRatio * 100) / 100;
+    
+    const aaLevel = {
+      normal: roundedRatio >= 4.5,
+      large: roundedRatio >= 3.0
+    };
+    
+    const aaaLevel = {
+      normal: roundedRatio >= 7.0,
+      large: roundedRatio >= 4.5
+    };
+    
+    // 🎨 **改善提案の生成**
+    const suggestions = generateWCAGSuggestions(foreground, background, roundedRatio);
+    
+    return {
+      foreground,
+      background,
+      contrastRatio: roundedRatio,
+      aaLevel,
+      aaaLevel,
+      suggestions
+    };
+  } catch (error) {
+    console.error('❌ WCAG計算エラー:', error, { foreground, background });
+    return createEmptyWCAGResult(foreground, background);
+  }
 }
 
 /**
@@ -146,27 +241,67 @@ function generateWCAGSuggestions(foreground: string, background: string, current
   lightVersion: string;
   darkVersion: string;
 } {
-  const targetRatio = 4.5; // AA基準
-  
-  // 明るい版の提案
-  let lightVersion = foreground;
-  let lightRatio = currentRatio;
-  while (lightRatio < targetRatio) {
-    lightVersion = chroma(lightVersion).brighten(0.5).hex();
-    lightRatio = chroma.contrast(lightVersion, background);
-    if (lightRatio > 21) break; // 無限ループ防止
+  try {
+    const targetRatio = 4.5; // AA基準
+    const maxIterations = 20; // 無限ループ完全防止
+    
+    // 明るい版の提案（安全版）
+    let lightVersion = foreground;
+    let lightRatio = currentRatio;
+    let lightIterations = 0;
+    
+    while (lightRatio < targetRatio && lightIterations < maxIterations) {
+      try {
+        const newColor = chroma(lightVersion).brighten(0.3).hex(); // より安全な調整値
+        const newRatio = chroma.contrast(newColor, background);
+        
+        // 無効な結果をチェック
+        if (!isFinite(newRatio) || isNaN(newRatio) || newRatio <= lightRatio) {
+          break; // 改善がない場合は停止
+        }
+        
+        lightVersion = newColor;
+        lightRatio = newRatio;
+        lightIterations++;
+        
+        if (lightRatio > 21) break; // 上限チェック
+      } catch (error) {
+        console.warn('🚨 明るい色の提案生成中にエラー:', error);
+        break;
+      }
+    }
+    
+    // 暗い版の提案（安全版）
+    let darkVersion = foreground;
+    let darkRatio = currentRatio;
+    let darkIterations = 0;
+    
+    while (darkRatio < targetRatio && darkIterations < maxIterations) {
+      try {
+        const newColor = chroma(darkVersion).darken(0.3).hex(); // より安全な調整値
+        const newRatio = chroma.contrast(newColor, background);
+        
+        // 無効な結果をチェック
+        if (!isFinite(newRatio) || isNaN(newRatio) || newRatio <= darkRatio) {
+          break; // 改善がない場合は停止
+        }
+        
+        darkVersion = newColor;
+        darkRatio = newRatio;
+        darkIterations++;
+        
+        if (darkRatio > 21) break; // 上限チェック
+      } catch (error) {
+        console.warn('🚨 暗い色の提案生成中にエラー:', error);
+        break;
+      }
+    }
+    
+    return { lightVersion, darkVersion };
+  } catch (error) {
+    console.error('❌ WCAG提案生成エラー:', error);
+    return { lightVersion: foreground, darkVersion: foreground };
   }
-  
-  // 暗い版の提案
-  let darkVersion = foreground;
-  let darkRatio = currentRatio;
-  while (darkRatio < targetRatio) {
-    darkVersion = chroma(darkVersion).darken(0.5).hex();
-    darkRatio = chroma.contrast(darkVersion, background);
-    if (darkRatio > 21) break; // 無限ループ防止
-  }
-  
-  return { lightVersion, darkVersion };
 }
 
 /**

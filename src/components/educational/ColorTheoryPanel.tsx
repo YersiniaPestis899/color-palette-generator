@@ -238,7 +238,7 @@ export default function ColorTheoryPanel({
               {/* セクションヘッダー */}
               <button
                 onClick={() => toggleTopic(key)}
-                className={`w-full p-3 text-left transition-colors ${section.bgColor} hover:opacity-80`}
+                className={`w-full p-3 text-left transition-colors ${section.bgColor} hover:opacity-80 cursor-pointer`}
               >
                 <div className="flex items-center justify-between">
                   <div className="flex items-center">

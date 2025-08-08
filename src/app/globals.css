@@ -1,204 +1,402 @@
 @import "tailwindcss";
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 
-/* 🎨 Tailwind v4 Theme Configuration */
-@theme {
-  /* 🎨 Color Palette */
-  --color-background: #ffffff;
-  --color-foreground: #1a1a1a;
-  --color-background-dark: #0a0a0a;
-  --color-foreground-dark: #ededed;
+/* 🌓 Theme support */
+:root {
+  --theme-bg-light: #F7F7F7;
+  --theme-text-light: #333333;
+  --theme-bg-dark: #1f2937;
+  --theme-text-dark: #f3f4f6;
   
-  /* 🔤 Typography */
-  --font-family-sans: 'Inter', system-ui, sans-serif;
-  
-  /* ✨ Custom Animations */
-  --animate-fade-in: fadeIn 0.5s ease-in-out;
-  --animate-slide-up: slideUp 0.3s ease-out;
-  
-  /* 🎬 Animation Keyframes */
-  --keyframes-fade-in: {
-    0% { opacity: 0; }
-    100% { opacity: 1; }
-  };
-  --keyframes-slide-up: {
-    0% { transform: translateY(10px); opacity: 0; }
-    100% { transform: translateY(0); opacity: 1; }
-  };
+  /* コンポーネント別のテーマ色 */
+  --header-bg-light: #ffffff;
+  --header-bg-dark: rgba(31, 41, 55, 0.8);
+  --footer-bg-light: #ffffff;
+  --footer-bg-dark: #1f2937;
+  --card-bg-light: #ffffff;
+  --card-bg-dark: #374151;
+  --section-bg-light: #f9fafb;
+  --section-bg-dark: #374151;
 }
 
-/* ✨ Custom Keyframes */
-@keyframes fadeIn {
-  0% { opacity: 0; }
-  100% { opacity: 1; }
+/* 🎨 Base styles */
+@layer base {
+  * {
+    box-sizing: border-box;
+    padding: 0;
+    margin: 0;
+  }
+
+  body {
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
 }
 
-@keyframes slideUp {
-  0% { transform: translateY(10px); opacity: 0; }
-  100% { transform: translateY(0); opacity: 1; }
+/* カスタムテーマクラス */
+.theme-bg-main {
+  background: linear-gradient(135deg, var(--theme-bg-light) 0%, #e5e7eb 100%);
+  transition: background 0.3s ease;
 }
 
-/* 🌓 Dark Mode Support */
+.dark .theme-bg-main {
+  background: linear-gradient(135deg, #111827 0%, #1f2937 100%);
+}
+
+/* 画像セクション用テーマ */
+.theme-bg-image {
+  background: linear-gradient(
+    135deg,
+    #dbeafe 0%,
+    #e5e7eb 100%
+  ); /* blue-50 to gray-200 */
+  transition: background 0.3s ease;
+}
+
+.dark .theme-bg-image {
+  background: linear-gradient(
+    135deg,
+    rgba(30, 64, 175, 0.2) 0%,
+    rgba(147, 51, 234, 0.2) 100%
+  ); /* blue-900/20 to purple-900/20 */
+}
+
+/* いろまぜコーナー用テーマ */
+.theme-bg-mixer {
+  background: linear-gradient(
+    135deg,
+    #ffffff 0%,
+    #f9fafb 100%
+  ); /* white to gray-50 */
+  transition: background 0.3s ease;
+}
+
+.dark .theme-bg-mixer {
+  background: linear-gradient(
+    135deg,
+    rgba(55, 65, 81, 0.8) 0%,
+    rgba(31, 41, 55, 0.8) 100%
+  ); /* gray-700/80 to gray-800/80 */
+}
+
+/* いろまぜコーナー専用のテーマクラス */
+.theme-mixer-border {
+  border-color: #d1d5db; /* gray-300 */
+  transition: border-color 0.3s ease;
+}
+
+.dark .theme-mixer-border {
+  border-color: #4b5563; /* gray-600 */
+}
+
+.theme-mixer-accent {
+  background-color: #e5e7eb; /* gray-200 */
+  color: #374151; /* gray-700 */
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.dark .theme-mixer-accent {
+  background-color: #4b5563; /* gray-600 */
+  color: #e5e7eb; /* gray-200 */
+}
+
+.theme-mixer-dragover {
+  background-color: #f3f4f6; /* gray-100 */
+  border-color: #9ca3af; /* gray-400 */
+  transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+
+.dark .theme-mixer-dragover {
+  background-color: rgba(75, 85, 99, 0.5); /* gray-600/50 */
+  border-color: #6b7280; /* gray-500 */
+}
+
+.theme-mixer-highlight {
+  border-color: #60a5fa; /* blue-400 */
+  background-color: #dbeafe; /* blue-100 */
+  transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+
+.dark .theme-mixer-highlight {
+  border-color: #3b82f6; /* blue-500 */
+  background-color: rgba(59, 130, 246, 0.2); /* blue-500/20 */
+}
+
+.theme-mixer-accent-hover:hover {
+  background-color: #e5e7eb; /* gray-200 */
+  color: #374151; /* gray-700 */
+}
+
+.dark .theme-mixer-accent-hover:hover {
+  background-color: #4b5563; /* gray-600 */
+  color: #e5e7eb; /* gray-200 */
+}
+
+/* 作った色のギャラリー用テーマ */
+.theme-bg-gallery {
+  background: linear-gradient(
+    135deg,
+    #dcfce7 0%,
+    #dbeafe 100%
+  ); /* green-100 to blue-100 */
+  transition: background 0.3s ease;
+}
+
+.dark .theme-bg-gallery {
+  background: linear-gradient(
+    135deg,
+    rgba(20, 83, 45, 0.2) 0%,
+    rgba(30, 64, 175, 0.2) 100%
+  ); /* green-900/20 to blue-900/20 */
+}
+
+/* コンポーネント別テーマクラス */
+.theme-header {
+  background-color: var(--header-bg-light);
+  backdrop-filter: blur(12px);
+  transition: background-color 0.3s ease;
+}
+
+.dark .theme-header {
+  background-color: var(--header-bg-dark);
+}
+
+.theme-footer {
+  background-color: var(--footer-bg-light);
+  transition: background-color 0.3s ease;
+}
+
+.dark .theme-footer {
+  background-color: var(--footer-bg-dark);
+}
+
+.theme-card {
+  background-color: var(--card-bg-light);
+  transition: background-color 0.3s ease;
+}
+
+.dark .theme-card {
+  background-color: var(--card-bg-dark);
+}
+
+.theme-section {
+  background-color: var(--section-bg-light);
+  transition: background-color 0.3s ease;
+}
+
+.dark .theme-section {
+  background-color: var(--section-bg-dark);
+}
+
+/* テキスト色用テーマクラス */
+.theme-text-primary {
+  color: var(--theme-text-light);
+  transition: color 0.3s ease;
+}
+
+.dark .theme-text-primary {
+  color: var(--theme-text-dark);
+}
+
+.theme-text-secondary {
+  color: #6b7280; /* gray-500 */
+  transition: color 0.3s ease;
+}
+
+.dark .theme-text-secondary {
+  color: #9ca3af; /* gray-400 */
+}
+
+.theme-text-muted {
+  color: #9ca3af; /* gray-400 */
+  transition: color 0.3s ease;
+}
+
+.dark .theme-text-muted {
+  color: #6b7280; /* gray-500 */
+}
+
+/* Light mode styles */
+html:not(.dark) {
+  background-color: var(--theme-bg-light);
+  color: var(--theme-text-light);
+}
+
+/* Dark mode styles */
+html.dark {
+  background-color: var(--theme-bg-dark);
+  color: var(--theme-text-dark);
+}
+
+/* 🌓 Dark mode support */
 @media (prefers-color-scheme: dark) {
   :root {
-    --color-background: var(--color-background-dark);
-    --color-foreground: var(--color-foreground-dark);
+    background-color: #111827;
+    color: #f3f4f6;
   }
 }
 
-/* 🎯 Base Styles */
-* {
-  box-sizing: border-box;
-  padding: 0;
-  margin: 0;
+/* 🔧 Custom utilities */
+.container-padding {
+  padding-left: 1rem;
+  padding-right: 1rem;
 }
 
-body {
-  color: var(--color-foreground);
-  background: var(--color-background);
-  font-family: var(--font-family-sans);
-  font-optical-sizing: auto;
-  font-weight: 400;
-  font-style: normal;
-  line-height: 1.6;
+/* 🎨 Font utilities for children-friendly content */
+.font-kids {
+  font-family: var(--font-mplus-rounded), 'M PLUS Rounded 1c', system-ui, -apple-system, sans-serif;
+  font-feature-settings: 'liga' on, 'clig' on;
 }
 
-/* 🪟 Glass Effect Utility */
-.glass-effect {
-  background: rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.2);
+.font-kids-light {
+  font-family: var(--font-mplus-rounded), 'M PLUS Rounded 1c', system-ui, -apple-system, sans-serif;
+  font-weight: 300;
+  font-feature-settings: 'liga' on, 'clig' on;
 }
 
-/* 🎨 Color Transition Utility */
-.color-transition {
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-/* 📏 Hover Scale Utility */
-.hover-scale:hover {
-  transform: scale(1.05);
-}
-
-/* 🌟 Custom Shadow Utility */
-.shadow-custom {
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-}
-
-/* 🔘 Button Components - v4 Compatible */
-.btn-primary {
-  background-color: rgb(37 99 235);
-  color: rgb(255 255 255);
+.font-kids-medium {
+  font-family: var(--font-mplus-rounded), 'M PLUS Rounded 1c', system-ui, -apple-system, sans-serif;
   font-weight: 500;
-  padding: 0.5rem 1rem;
-  border-radius: 0.5rem;
-  transition-property: background-color;
-  transition-duration: 200ms;
+  font-feature-settings: 'liga' on, 'clig' on;
 }
 
-.btn-primary:hover {
-  background-color: rgb(29 78 216);
+.font-kids-bold {
+  font-family: var(--font-mplus-rounded), 'M PLUS Rounded 1c', system-ui, -apple-system, sans-serif;
+  font-weight: 700;
+  font-feature-settings: 'liga' on, 'clig' on;
 }
 
-.btn-secondary {
-  background-color: rgb(229 231 235);
-  color: rgb(31 41 55);
+.font-kids-extrabold {
+  font-family: var(--font-mplus-rounded), 'M PLUS Rounded 1c', system-ui, -apple-system, sans-serif;
+  font-weight: 800;
+  font-feature-settings: 'liga' on, 'clig' on;
+}
+
+/* 🎨 Theme-based font switching */
+.theme-elementary {
+  font-family: var(--font-mplus-rounded), 'M PLUS Rounded 1c', system-ui, -apple-system, sans-serif;
+  font-feature-settings: 'liga' on, 'clig' on;
+}
+
+.theme-elementary-text {
+  font-family: var(--font-mplus-rounded), 'M PLUS Rounded 1c', system-ui, -apple-system, sans-serif;
+  font-feature-settings: 'liga' on, 'clig' on;
+}
+
+.theme-elementary-heading {
+  font-family: var(--font-mplus-rounded), 'M PLUS Rounded 1c', system-ui, -apple-system, sans-serif;
+  font-weight: 700;
+  font-feature-settings: 'liga' on, 'clig' on;
+}
+
+.theme-elementary-button {
+  font-family: var(--font-mplus-rounded), 'M PLUS Rounded 1c', system-ui, -apple-system, sans-serif;
   font-weight: 500;
-  padding: 0.5rem 1rem;
-  border-radius: 0.5rem;
-  transition-property: background-color;
-  transition-duration: 200ms;
+  font-feature-settings: 'liga' on, 'clig' on;
 }
 
-.btn-secondary:hover {
-  background-color: rgb(209 213 219);
-}
-
-/* 🌙 Dark Mode Support for Custom Buttons */
-@media (prefers-color-scheme: dark) {
-  .btn-secondary {
-    background-color: rgb(55 65 81);
-    color: rgb(243 244 246);
-  }
-  
-  .btn-secondary:hover {
-    background-color: rgb(75 85 99);
+@media (min-width: 640px) {
+  .container-padding {
+    padding-left: 2rem;
+    padding-right: 2rem;
   }
 }
 
-/* 🎮 Interactive Elements Enhancement */
-.interactive-hover {
-  transition: all 0.2s ease-in-out;
-}
-
-.interactive-hover:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-}
-
-/* 🎯 Focus States */
-.focus-ring:focus {
-  outline: 2px solid rgb(59 130 246);
-  outline-offset: 2px;
-}
-
-/* 🌈 Color Palette Specific Styles */
-.color-card-hover {
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.color-card-hover:hover {
-  transform: scale(1.05) rotate(1deg);
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
-}
-
-/* 📱 Mobile Optimizations */
-@media (max-width: 640px) {
-  .mobile-padding {
-    padding: 1rem;
-  }
-  
-  .mobile-text {
-    font-size: 0.875rem;
+@media (min-width: 1024px) {
+  .container-padding {
+    padding-left: 3rem;
+    padding-right: 3rem;
   }
 }
 
-/* ⚡ Performance Optimizations */
-.gpu-accelerated {
-  transform: translateZ(0);
-  will-change: transform;
-}
-
-/* 🎨 Animation Utilities */
-.animate-fade-in {
-  animation: fadeIn 0.5s ease-in-out;
-}
-
-.animate-slide-up {
-  animation: slideUp 0.3s ease-out;
-}
-
-/* 🎪 Accessibility Improvements */
-@media (prefers-reduced-motion: reduce) {
-  .color-transition,
-  .interactive-hover,
-  .color-card-hover,
-  .animate-fade-in,
-  .animate-slide-up {
-    transition: none;
-    animation: none;
+@media (min-width: 1280px) {
+  .container-padding {
+    padding-left: 4rem;
+    padding-right: 4rem;
   }
 }
 
-/* 📊 Data Visualization Helpers */
-.chart-container {
-  position: relative;
-  height: 400px;
-  width: 100%;
+/* Settings Dropdown用テーマクラス */
+.theme-dropdown {
+  background-color: #ffffff;
+  color: var(--theme-text-light);
+  border-color: #e5e7eb;
+  transition: background-color 0.3s ease, color 0.3s ease,
+    border-color 0.3s ease;
 }
 
-/* 🖼️ Image Optimization */
-.optimized-image {
-  image-rendering: -webkit-optimize-contrast;
-  image-rendering: optimizeQuality;
+.dark .theme-dropdown {
+  background-color: #374151;
+  color: var(--theme-text-dark);
+  border-color: #4b5563;
+}
+
+.theme-input {
+  background-color: #ffffff;
+  color: var(--theme-text-light);
+  border-color: #d1d5db;
+  transition: background-color 0.3s ease, color 0.3s ease,
+    border-color 0.3s ease;
+}
+
+.dark .theme-input {
+  background-color: #374151;
+  color: var(--theme-text-dark);
+  border-color: #4b5563;
+}
+
+.theme-border {
+  border-color: #e5e7eb;
+  transition: border-color 0.3s ease;
+}
+
+.dark .theme-border {
+  border-color: #4b5563;
+}
+
+/* ImageUploader用テーマクラス */
+.theme-upload-border {
+  border-color: #d1d5db;
+  transition: border-color 0.3s ease;
+}
+
+.theme-upload-border:hover {
+  border-color: #9ca3af;
+}
+
+.dark .theme-upload-border {
+  border-color: #4b5563;
+}
+
+.dark .theme-upload-border:hover {
+  border-color: #6b7280;
+}
+
+.theme-info-box {
+  background-color: #dbeafe;
+  color: #1e40af;
+  border-color: #bfdbfe;
+  transition: background-color 0.3s ease, color 0.3s ease,
+    border-color 0.3s ease;
+}
+
+.dark .theme-info-box {
+  background-color: rgba(30, 64, 175, 0.2);
+  color: #93c5fd;
+  border-color: rgba(30, 64, 175, 0.3);
+}
+
+/* Notification用テーマクラス */
+.theme-warning {
+  background-color: #fef3c7;
+  color: #92400e;
+  border-color: #eab308;
+  transition: background-color 0.3s ease, color 0.3s ease,
+    border-color 0.3s ease;
+}
+
+.dark .theme-warning {
+  background-color: rgba(245, 158, 11, 0.3);
+  color: #fbbf24;
+  border-color: rgba(245, 158, 11, 0.5);
 }

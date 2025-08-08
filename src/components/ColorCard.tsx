@@ -125,7 +125,7 @@ export default function ColorCard({
                   e.stopPropagation();
                   handleEdit();
                 }}
-                className="p-1 bg-blue-500 hover:bg-blue-600 text-white rounded transition-colors duration-200"
+                className="p-1 bg-blue-500 hover:bg-blue-600 text-white rounded transition-colors duration-200 cursor-pointer"
                 title="色を編集"
               >
                 <Edit3 className="h-3 w-3" />
@@ -137,7 +137,7 @@ export default function ColorCard({
                     e.stopPropagation();
                     onRemove();
                   }}
-                  className="p-1 bg-red-500 hover:bg-red-600 text-white rounded transition-colors duration-200"
+                  className="p-1 bg-red-500 hover:bg-red-600 text-white rounded transition-colors duration-200 cursor-pointer"
                   title="色を削除"
                 >
                   <Trash2 className="h-3 w-3" />
@@ -187,13 +187,13 @@ export default function ColorCard({
               />
               <button
                 onClick={handleSaveEdit}
-                className="px-2 py-1 bg-blue-500 text-white rounded text-xs hover:bg-blue-600 transition-colors"
+                className="px-2 py-1 bg-blue-500 text-white rounded text-xs hover:bg-blue-600 transition-colors cursor-pointer"
               >
                 保存
               </button>
               <button
                 onClick={handleCancelEdit}
-                className="px-2 py-1 bg-gray-500 text-white rounded text-xs hover:bg-gray-600 transition-colors"
+                className="px-2 py-1 bg-gray-500 text-white rounded text-xs hover:bg-gray-600 transition-colors cursor-pointer"
               >
                 キャンセル
               </button>
@@ -205,7 +205,7 @@ export default function ColorCard({
               </span>
               <button
                 onClick={() => handleCopy(color.hex, 'hex')}
-                className="p-1 text-gray-400 hover:text-blue-500 transition-colors duration-200"
+                className="p-1 text-gray-400 hover:text-blue-500 transition-colors duration-200 cursor-pointer"
                 title="HEX値をコピー"
               >
                 {copied === 'hex' ? (
@@ -225,7 +225,7 @@ export default function ColorCard({
           </span>
           <button
             onClick={() => handleCopy(`rgb(${color.rgb.r}, ${color.rgb.g}, ${color.rgb.b})`, 'rgb')}
-            className="p-1 text-gray-400 hover:text-blue-500 transition-colors duration-200"
+            className="p-1 text-gray-400 hover:text-blue-500 transition-colors duration-200 cursor-pointer"
             title="RGB値をコピー"
           >
             {copied === 'rgb' ? (
@@ -243,7 +243,7 @@ export default function ColorCard({
           </span>
           <button
             onClick={() => handleCopy(`hsl(${color.hsl.h}, ${color.hsl.s}%, ${color.hsl.l}%)`, 'hsl')}
-            className="p-1 text-gray-400 hover:text-blue-500 transition-colors duration-200"
+            className="p-1 text-gray-400 hover:text-blue-500 transition-colors duration-200 cursor-pointer"
             title="HSL値をコピー"
           >
             {copied === 'hsl' ? (

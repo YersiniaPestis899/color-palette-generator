@@ -84,7 +84,7 @@ export default function PaletteDisplay({ palette, onSave, onShare }: PaletteDisp
           <div className="flex bg-gray-100 dark:bg-gray-700 rounded-lg p-1">
             <button
               onClick={() => setViewMode('grid')}
-              className={`p-2 rounded ${
+              className={`p-2 rounded cursor-pointer ${
                 viewMode === 'grid' 
                   ? 'bg-white dark:bg-gray-600 shadow-sm' 
                   : 'hover:bg-gray-200 dark:hover:bg-gray-600'
@@ -95,7 +95,7 @@ export default function PaletteDisplay({ palette, onSave, onShare }: PaletteDisp
             </button>
             <button
               onClick={() => setViewMode('list')}
-              className={`p-2 rounded ${
+              className={`p-2 rounded cursor-pointer ${
                 viewMode === 'list' 
                   ? 'bg-white dark:bg-gray-600 shadow-sm' 
                   : 'hover:bg-gray-200 dark:hover:bg-gray-600'
@@ -110,7 +110,7 @@ export default function PaletteDisplay({ palette, onSave, onShare }: PaletteDisp
           <div className="relative">
             <button
               onClick={() => setShowExportMenu(!showExportMenu)}
-              className="flex items-center space-x-2 bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg transition-colors duration-200"
+              className="flex items-center space-x-2 bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg transition-colors duration-200 cursor-pointer"
             >
               <Download className="h-4 w-4" />
               <span>エクスポート</span>
@@ -121,26 +121,26 @@ export default function PaletteDisplay({ palette, onSave, onShare }: PaletteDisp
                 <div className="p-2 space-y-1">
                   <button
                     onClick={() => handleExport('css')}
-                    className="w-full text-left px-3 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded text-sm"
+                    className="w-full text-left px-3 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded text-sm cursor-pointer"
                   >
                     CSS Variables
                   </button>
                   <button
                     onClick={() => handleExport('json')}
-                    className="w-full text-left px-3 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded text-sm"
+                    className="w-full text-left px-3 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded text-sm cursor-pointer"
                   >
                     JSON
                   </button>
                   <button
                     onClick={() => handleExport('text')}
-                    className="w-full text-left px-3 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded text-sm"
+                    className="w-full text-left px-3 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded text-sm cursor-pointer"
                   >
                     テキスト
                   </button>
                   <hr className="my-1" />
                   <button
                     onClick={handleCopyAllColors}
-                    className="w-full text-left px-3 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded text-sm"
+                    className="w-full text-left px-3 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded text-sm cursor-pointer"
                   >
                     すべての色をコピー
                   </button>
@@ -152,7 +152,7 @@ export default function PaletteDisplay({ palette, onSave, onShare }: PaletteDisp
           {/* 共有ボタン */}
           <button
             onClick={handleSharePalette}
-            className="flex items-center space-x-2 bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg transition-colors duration-200"
+            className="flex items-center space-x-2 bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg transition-colors duration-200 cursor-pointer"
           >
             <Share2 className="h-4 w-4" />
             <span>共有</span>
@@ -162,7 +162,7 @@ export default function PaletteDisplay({ palette, onSave, onShare }: PaletteDisp
           {onSave && (
             <button
               onClick={onSave}
-              className="flex items-center space-x-2 bg-purple-500 hover:bg-purple-600 text-white px-4 py-2 rounded-lg transition-colors duration-200"
+              className="flex items-center space-x-2 bg-purple-500 hover:bg-purple-600 text-white px-4 py-2 rounded-lg transition-colors duration-200 cursor-pointer"
             >
               <Save className="h-4 w-4" />
               <span>保存</span>

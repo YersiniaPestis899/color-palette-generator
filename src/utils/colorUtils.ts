@@ -272,6 +272,128 @@ export function exportToJson(colors: ColorInfo[], paletteName: string): string {
 /**
  * クリップボードにコピー
  */
+/**
+ * 🎨 色混合アニメーション用のユーティリティ関数
+ */
+
+/**
+ * 段階的な色変化のキーフレームを生成
+ * 手作業感のあるムラを表現するため、ランダムな変化を含む
+ * 
+ * @example
+ * const frames = generateColorMixingAnimation([redColor, blueColor], 30);
+ * // 赤から紫への30段階の変化を生成
+ */
+export function generateColorMixingAnimation(
+  colors: ColorInfo[], 
+  steps: number = 30
+): { hex: string; progress: number }[] {
+  if (colors.length < 2) {
+    return [{ hex: colors[0]?.hex || '#000000', progress: 1 }];
+  }
+
+  const frames: { hex: string; progress: number }[] = [];
+  
+  // 各ステップでの色を計算
+  for (let i = 0; i <= steps; i++) {
+    const progress = i / steps;
+    
+    // 手作業感を出すためのムラを追加
+    // 進行度にランダムな変動を加える（±10%程度）
+    const jitter = (Math.random() - 0.5) * 0.1;
+    const adjustedProgress = Math.max(0, Math.min(1, progress + jitter));
+    
+    let mixedColor: string;
+    
+    if (colors.length === 2) {
+      // 2色の場合：シンプルな補間
+      mixedColor = chroma.mix(colors[0].hex, colors[1].hex, adjustedProgress).hex();
+    } else {
+      // 3色以上の場合：段階的な混合
+      mixedColor = getMixedColorAtProgress(colors, adjustedProgress);
+    }
+    
+    frames.push({
+      hex: mixedColor,
+      progress: progress
+    });
+  }
+  
+  return frames;
+}
+
+/**
+ * 複数色の段階的混合を計算
+ * 進行度に応じて色を段階的に追加していく
+ */
+function getMixedColorAtProgress(colors: ColorInfo[], progress: number): string {
+  if (progress <= 0) return colors[0].hex;
+  if (progress >= 1) {
+    // 最終的にすべての色を混合
+    let result = colors[0].hex;
+    for (let i = 1; i < colors.length; i++) {
+      result = chroma.mix(result, colors[i].hex, 1 / (i + 1)).hex();
+    }
+    return result;
+  }
+  
+  // 進行度に基づいて色を段階的に追加
+  const totalColors = colors.length;
+  const currentStage = progress * (totalColors - 1);
+  const stageIndex = Math.floor(currentStage);
+  const stageProgress = currentStage - stageIndex;
+  
+  if (stageIndex === 0) {
+    // 1色目から2色目への変化
+    return chroma.mix(colors[0].hex, colors[1].hex, stageProgress).hex();
+  }
+  
+  // すでにstageIndex個の色が混ざっている状態に、次の色を追加
+  let currentMix = colors[0].hex;
+  for (let i = 1; i <= stageIndex; i++) {
+    currentMix = chroma.mix(currentMix, colors[i].hex, 1 / (i + 1)).hex();
+  }
+  
+  // 次の色を段階的に追加
+  if (stageIndex + 1 < colors.length) {
+    const nextColorWeight = stageProgress / (stageIndex + 2);
+    currentMix = chroma.mix(currentMix, colors[stageIndex + 1].hex, nextColorWeight).hex();
+  }
+  
+  return currentMix;
+}
+
+/**
+ * ムラのあるエフェクト用のランダム色バリエーション
+ * 手作業感を演出するため、微細な色の揺らぎを生成
+ */
+export function addColorJitter(hex: string, intensity: number = 0.05): string {
+  const color = chroma(hex);
+  const [h, s, l] = color.hsl();
+  
+  // 色相、彩度、明度にわずかな変動を加える
+  const newH = (h + (Math.random() - 0.5) * intensity * 360) % 360;
+  const newS = Math.max(0, Math.min(1, s + (Math.random() - 0.5) * intensity));
+  const newL = Math.max(0, Math.min(1, l + (Math.random() - 0.5) * intensity));
+  
+  return chroma.hsl(newH || 0, newS, newL).hex();
+}
+
+/**
+ * 混合アニメーション用の遅延時間を計算
+ * より自然な手作業感を演出
+ */
+export function calculateAnimationDelay(stepIndex: number, totalSteps: number): number {
+  // 基本遅延時間（ミリ秒）
+  const baseDelay = 50;
+  
+  // 初期は早く、後半は少し遅くなる自然なカーブ
+  const curve = 1 - Math.pow(stepIndex / totalSteps, 0.7);
+  const randomJitter = (Math.random() - 0.5) * 20; // ±10ms のランダム性
+  
+  return Math.max(10, baseDelay * curve + randomJitter);
+}
+
 export async function copyToClipboard(text: string): Promise<boolean> {
   try {
     await navigator.clipboard.writeText(text);

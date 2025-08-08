@@ -213,3 +213,190 @@ export function extractColorsFromCanvas(
     createColorInfo(color.r, color.g, color.b, `canvas_${Date.now()}_${index}`)
   );
 }
+
+/**
+ * 🎨 超高精度スポイト機能：画像上の指定位置の色を抽出
+ */
+export function extractColorFromImageAtPosition(
+  imageElement: HTMLImageElement,
+  x: number,
+  y: number
+): Promise<ColorInfo> {
+  return new Promise((resolve, reject) => {
+    try {
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d', { 
+        willReadFrequently: true,
+        alpha: false // アルファチャンネルを無効化して高速化
+      });
+      
+      if (!ctx) {
+        reject(new Error('Canvas context の取得に失敗しました'));
+        return;
+      }
+      
+      // 🎯 キャンバスのサイズを画像と全く同じに設定
+      canvas.width = imageElement.naturalWidth;
+      canvas.height = imageElement.naturalHeight;
+      
+      // 🔍 高品質描画設定
+      ctx.imageSmoothingEnabled = false; // 補間を無効化して正確な色を取得
+      ctx.imageSmoothingQuality = 'high';
+      
+      // 画像をキャンバスに描画
+      ctx.drawImage(imageElement, 0, 0);
+      
+      // 💎 極限精度色拽出：5x5ピクセルの重み付き平均を取る
+      const sampleSize = 5; // 5x5グリッドでより精密に
+      const halfSize = Math.floor(sampleSize / 2);
+      const centerWeight = 3; // 中央ピクセルの重みを大きく
+      
+      let totalR = 0, totalG = 0, totalB = 0, totalWeight = 0;
+      
+      for (let dy = -halfSize; dy <= halfSize; dy++) {
+        for (let dx = -halfSize; dx <= halfSize; dx++) {
+          const sampleX = Math.max(0, Math.min(canvas.width - 1, x + dx));
+          const sampleY = Math.max(0, Math.min(canvas.height - 1, y + dy));
+          
+          const imageData = ctx.getImageData(sampleX, sampleY, 1, 1);
+          const data = imageData.data;
+          
+          if (data[3] > 0) { // アルファ値が0でないピクセルのみ使用
+            // 中央からの距離によって重みを計算（中央ほど重く）
+            const distance = Math.sqrt(dx * dx + dy * dy);
+            const weight = dx === 0 && dy === 0 ? centerWeight : Math.max(1, centerWeight - distance);
+            
+            totalR += data[0] * weight;
+            totalG += data[1] * weight;
+            totalB += data[2] * weight;
+            totalWeight += weight;
+          }
+        }
+      }
+      
+      if (totalWeight === 0) {
+        // 💎 フォールバック：中央ピクセルのみ使用（最高精度）
+        const imageData = ctx.getImageData(x, y, 1, 1);
+        const data = imageData.data;
+        const r = data[0];
+        const g = data[1];
+        const b = data[2];
+        const colorInfo = createColorInfo(r, g, b, `eyedropper_ultra_precise_${Date.now()}_${x}_${y}`);
+        resolve(colorInfo);
+        return;
+      }
+      
+      // 重み付き平均色を計算（最高精度）
+      const avgR = Math.round(totalR / totalWeight);
+      const avgG = Math.round(totalG / totalWeight);
+      const avgB = Math.round(totalB / totalWeight);
+      
+      // 💎 極限精度ColorInfo オブジェクトを作成
+      const colorInfo = createColorInfo(avgR, avgG, avgB, `eyedropper_ultra_precise_${Date.now()}_${x}_${y}`);
+      resolve(colorInfo);
+      
+    } catch (error) {
+      reject(new Error(`色の抽出に失敗しました: ${error}`));
+    }
+  });
+}
+
+/**
+ * 💎 極限精度画像座標変換（サブピクセル精度対応）
+ */
+export function getCanvasCoordinatesFromImageClick(
+  event: React.MouseEvent<HTMLImageElement>,
+  imageElement: HTMLImageElement
+): { x: number; y: number } {
+  // 画像要素の境界を取得
+  const rect = imageElement.getBoundingClientRect();
+  
+  // 💎 サブピクセル精度クリック座標（フロート精度）
+  const clickX = event.clientX - rect.left;
+  const clickY = event.clientY - rect.top;
+  
+  // 画像の自然サイズと表示サイズ（高精度）
+  const naturalWidth = imageElement.naturalWidth;
+  const naturalHeight = imageElement.naturalHeight;
+  const displayWidth = rect.width;
+  const displayHeight = rect.height;
+  
+  // 💎 アスペクト比を高精度で計算
+  const naturalAspectRatio = naturalWidth / naturalHeight;
+  const displayAspectRatio = displayWidth / displayHeight;
+  
+  let sourceX: number, sourceY: number;
+  
+  // 💎 object-contain の動作を極限精度でシミュレート
+  if (naturalAspectRatio > displayAspectRatio) {
+    // 画像が横に長い → 上下に黒帯
+    const scaledHeight = displayWidth / naturalAspectRatio;
+    const yOffset = (displayHeight - scaledHeight) / 2;
+    
+    // クリック位置が画像領域内かチェック
+    const adjustedY = clickY - yOffset;
+    
+    if (adjustedY < 0 || adjustedY > scaledHeight) {
+      // 黒帯部分がクリックされた場合（端っこの色を抽出）
+      sourceX = Math.round((clickX / displayWidth) * naturalWidth);
+      sourceY = adjustedY < 0 ? 0 : naturalHeight - 1;
+    } else {
+      // 実際の画像部分がクリックされた場合（高精度変換）
+      sourceX = (clickX / displayWidth) * naturalWidth;
+      sourceY = (adjustedY / scaledHeight) * naturalHeight;
+    }
+  } else {
+    // 画像が縦に長い → 左右に黒帯
+    const scaledWidth = displayHeight * naturalAspectRatio;
+    const xOffset = (displayWidth - scaledWidth) / 2;
+    
+    // クリック位置が画像領域内かチェック
+    const adjustedX = clickX - xOffset;
+    
+    if (adjustedX < 0 || adjustedX > scaledWidth) {
+      // 黒帯部分がクリックされた場合（端っこの色を抽出）
+      sourceX = adjustedX < 0 ? 0 : naturalWidth - 1;
+      sourceY = Math.round((clickY / displayHeight) * naturalHeight);
+    } else {
+      // 実際の画像部分がクリックされた場合（高精度変換）
+      sourceX = (adjustedX / scaledWidth) * naturalWidth;
+      sourceY = (clickY / displayHeight) * naturalHeight;
+    }
+  }
+  
+  // 💎 最終的なピクセル座標への変換（四捨五入で最適化）
+  const finalX = Math.max(0, Math.min(naturalWidth - 1, Math.round(sourceX)));
+  const finalY = Math.max(0, Math.min(naturalHeight - 1, Math.round(sourceY)));
+  
+  return { x: finalX, y: finalY };
+}
+
+/**
+ * 🎨 画像にスポイト機能を追加するヘルパー（デバッグ情報付き）
+ */
+export async function handleImageEyedropper(
+  event: React.MouseEvent<HTMLImageElement>,
+  imageElement: HTMLImageElement
+): Promise<ColorInfo> {
+  const { x, y } = getCanvasCoordinatesFromImageClick(event, imageElement);
+  
+  // 🔍 デバッグ情報（開発時のみ）
+  if (process.env.NODE_ENV === 'development') {
+    const rect = imageElement.getBoundingClientRect();
+    const clickX = event.clientX - rect.left;
+    const clickY = event.clientY - rect.top;
+    
+    console.group('🎨 Eyedropper Debug Info');
+    console.log('📍 Click Position:', { clickX, clickY });
+    console.log('🖼️ Image Display:', { width: rect.width, height: rect.height });
+    console.log('🎆 Image Natural:', { width: imageElement.naturalWidth, height: imageElement.naturalHeight });
+    console.log('🎯 Extracted Position:', { x, y });
+    console.log('📈 Scale Ratio:', { 
+      scaleX: imageElement.naturalWidth / rect.width,
+      scaleY: imageElement.naturalHeight / rect.height
+    });
+    console.groupEnd();
+  }
+  
+  return extractColorFromImageAtPosition(imageElement, x, y);
+}

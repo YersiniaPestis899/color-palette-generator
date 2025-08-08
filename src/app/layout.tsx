@@ -1,5 +1,13 @@
+import { Inter } from 'next/font/google';
 import { Metadata } from 'next';
 import './globals.css';
+import ThemeInitializer from './ThemeInitializer';
+
+const inter = Inter({ 
+  subsets: ['latin'],
+  variable: '--font-inter',
+  display: 'swap'
+});
 
 export const metadata: Metadata = {
   title: 'Color Palette Generator - 画像から美しいカラーパレットを生成',
@@ -37,7 +45,8 @@ export default function RootLayout({
         <link rel="manifest" href="/manifest.json" />
         <meta name="theme-color" content="#3b82f6" />
       </head>
-      <body className="antialiased">
+      <body className={`antialiased ${inter.className}`}>
+        <ThemeInitializer />
         {children}
       </body>
     </html>
